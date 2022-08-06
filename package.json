@@ -1,15 +1,10 @@
 {
-  "name": "boss_user_app_nest",
+  "name": "organization_app",
   "version": "0.0.1",
   "description": "",
-  "author": "Artur Tsoklan <a.tsoklan@gmail.com>",
+  "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/skymastery/boss_user_app.git"
-  },
-  "homepage": "https://github.com/skymastery/boss_user_app#readme",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -29,6 +24,9 @@
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/typeorm": "^9.0.0",
+    "mysql2": "^2.3.3",
+    "pg": "^8.7.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
@@ -44,7 +42,6 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "dotenv": "^16.0.1",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
