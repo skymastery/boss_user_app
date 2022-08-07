@@ -4,28 +4,28 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   OneToMany,
-} from 'typeorm';
+} from 'typeorm'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
+
+  @Column({ unique: true })
+  username: string
 
   @Column()
-  username: string;
+  passwordHashed: string
 
-  @Column()
-  password: string;
+  @Column({ default: null })
+  passwordSalt: string
 
-  @Column()
-  passwordSalt: string;
+  @ManyToOne(() => User, (user) => user.id)
+  subordinateOf: User
 
-  @ManyToOne(() => User, (user) => user.bossOf)
-  subordinateOf: User;
+  @OneToMany(() => User, (user) => user.id)
+  bossOf: User[]
 
-  @OneToMany(() => User, (user) => user.subordinateOf)
-  bossOf: User[];
-
-  @Column({ default: true })
-  isAdmin: boolean;
+  @Column({ default: false })
+  isAdmin: boolean
 }

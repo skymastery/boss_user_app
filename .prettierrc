@@ -1,4 +1,10 @@
 {
+  "semi": false,
   "singleQuote": true,
-  "trailingComma": "all"
+  "tabWidth": 2,
+  "useTabs": false,
+  "jsxSingleQuote": true,
+  "trailingComma": "es5",
+  "jsxBracketSameLine": true,
+  "importOrderSeparation": true
 }
