@@ -2,7 +2,7 @@
    "name": "organization_app",
    "version": "0.0.1",
    "description": "",
-   "author": "",
+   "author": "Artur Tsoklan",
    "private": true,
    "license": "UNLICENSED",
    "scripts": {
@@ -19,7 +19,10 @@
       "test:cov": "jest --coverage",
       "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
       "test:e2e": "jest --config ./test/jest-e2e.json",
-      "typeorm": "typeorm-ts-node-commonjs"
+      "typeorm": "typeorm-ts-node-commonjs",
+      "migration:generate": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate -d src/orm/config/ormconfig.ts",
+      "migration:run": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:run -d src/orm/config/ormconfig.ts",
+      "migration:down": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:revert -d src/orm/config/ormconfig.ts"
    },
    "dependencies": {
       "@nestjs/common": "^8.0.0",

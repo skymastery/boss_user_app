@@ -7,6 +7,7 @@ import { AuthService } from '../auth/auth.service'
 import { AssignBossDto } from './dto/AssignBoss.dto'
 import { UserOutputDto } from './dto/UserOutput.dto'
 import { getRecursiveSubordinatesSqlString } from '../_shared/queries/sql_getRecursiveSubordinates'
+import { ResponseMsgDto } from './dto/ResponseMsg.dto'
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,7 @@ export class UsersService {
     private readonly authService: AuthService
   ) {}
 
-  async createUser(inputData: UserCredsDto): Promise<{ msg: string }> {
+  async createUser(inputData: UserCredsDto): Promise<ResponseMsgDto> {
     const userExists = await this.userRepository.findOne({
       where: {
         username: inputData.username,
@@ -53,7 +54,7 @@ export class UsersService {
   async assignBossToUser(
     data: AssignBossDto,
     payloadId: number
-  ): Promise<{ msg: string }> {
+  ): Promise<ResponseMsgDto> {
     const user = await this.userRepository.findOne({
       where: {
         id: data.futureSubordinateId,
@@ -64,7 +65,7 @@ export class UsersService {
       payloadId
     )
 
-    let subordinateValidation // boolean
+    let subordinateValidation: boolean
     for (const subordinate of recursiveSubordinates) {
       if (subordinate.id === data.futureSubordinateId) {
         subordinateValidation = true

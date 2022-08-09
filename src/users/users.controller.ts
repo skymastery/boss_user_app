@@ -11,6 +11,7 @@ import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/CreateUser.dto'
 import { JwtAuthGuard } from '../_guards/auth.guard'
 import { AssignBossDto } from './dto/AssignBoss.dto'
+import { ResponseMsgDto } from './dto/ResponseMsg.dto'
 
 @Controller('users')
 export class UsersController {
@@ -19,7 +20,7 @@ export class UsersController {
   @Post()
   async createUser(
     @Body() createUserDto: CreateUserDto
-  ): Promise<{ msg: string }> {
+  ): Promise<ResponseMsgDto> {
     return this.usersService.createUser(createUserDto)
   }
 
@@ -34,7 +35,7 @@ export class UsersController {
   async updUser(
     @Body() body: AssignBossDto,
     @Req() req: any
-  ): Promise<{ msg: string }> {
+  ): Promise<ResponseMsgDto> {
     return this.usersService.assignBossToUser(body, req.userId)
   }
 }

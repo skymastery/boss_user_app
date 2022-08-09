@@ -16,18 +16,18 @@ export class AuthService {
   ) {}
 
   public async authenticate(
-    userDto: UserCredsDto
+    userCreds: UserCredsDto
   ): Promise<{ user: User; auth: { accessToken: string } }> {
     const user = await this.userRepository.findOne({
       where: {
-        username: userDto.username,
+        username: userCreds.username,
       },
     })
     if (!user) {
       throw new BadRequestException('Username or password incorrect.')
     }
     const isValidPassword = this.validatePassword(
-      userDto.password,
+      userCreds.password,
       user.passwordSalt,
       user.passwordHashed
     )
