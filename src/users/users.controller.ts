@@ -20,13 +20,13 @@ export class UsersController {
   async createUser(
     @Body() createUserDto: CreateUserDto
   ): Promise<{ msg: string }> {
-    return await this.usersService.createUser(createUserDto)
+    return this.usersService.createUser(createUserDto)
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('subordinates')
   async getAllSubordinates(@Req() req: any) {
-    return this.usersService.getSubordinatesOfUser(req.user.id)
+    return this.usersService.getSubordinatesOfUser(req.userId)
   }
 
   @UseGuards(JwtAuthGuard)

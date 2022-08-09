@@ -6,6 +6,7 @@ import { UserCredsDto } from './dto/UserCreds.dto'
 import { AuthService } from '../auth/auth.service'
 import { AssignBossDto } from './dto/AssignBoss.dto'
 import { UserOutputDto } from './dto/UserOutput.dto'
+import { getRecursiveSubordinatesSqlString } from '../_shared/queries/sql_getRecursiveSubordinates'
 
 @Injectable()
 export class UsersService {
@@ -81,31 +82,7 @@ export class UsersService {
   }
 
   async queryRecursiveSubordinates(id: number) {
-    return await this.userRepository.query(
-      `WITH RECURSIVE subordinates AS (
- SELECT
-  id,
-  username,
-  boss
-
- FROM
-    "user"
- WHERE
-  id = ${id}
- UNION
-  SELECT
-   u.id,
-   u.username,
-   u.boss
-   
-  FROM
-   "user" u
-  INNER JOIN subordinates s ON s.id = u.boss
-) SELECT
- *
-FROM
- subordinates`
-    )
+    return this.userRepository.query(getRecursiveSubordinatesSqlString(id))
   }
 
   async getSubordinatesOfUser(id: number) {
@@ -119,7 +96,7 @@ FROM
     }
 
     if (user.isAdmin === true) {
-      return await this.getAllUsers()
+      return this.getAllUsers()
     }
 
     return this.queryRecursiveSubordinates(id)

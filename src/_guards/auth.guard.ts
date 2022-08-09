@@ -30,18 +30,18 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid Authorization token')
     }
 
-    req.user = await this.userRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: {
         id: parseInt(payload.id),
       },
     })
-    if (!req.user) {
+    if (!user) {
       throw new UnauthorizedException(
         'Authentication failed. Token is valid, but this user is not found.'
       )
     }
 
-    req.userId = req.user.id
+    req.userId = user.id
 
     return true
   }
