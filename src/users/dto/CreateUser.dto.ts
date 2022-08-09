@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator'
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator'
 
 export class CreateUserDto {
   @IsString()
@@ -9,4 +15,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Length(6, 16)
   password: string
+
+  @IsInt()
+  @IsOptional()
+  subordinateOfId: number
 }

@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/CreateUser.dto'
 import { UserCredsDto } from './dto/UserCreds.dto'
-import { UserOutputDto } from './dto/UserOutput.dto'
 
 @Controller('users')
 export class UsersController {
@@ -18,8 +17,20 @@ export class UsersController {
     return this.usersService.authenticate(body)
   }
 
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @SerializeOptions({})
   @Get('getUsers')
-  async getAllUsers(): Promise<UserOutputDto[]> {
+  async getAllUsers() {
     return this.usersService.getAllUsers()
+  }
+
+  @Get('subordinates/:id')
+  async getAllSubordinates(@Param('id') id: number) {
+    return this.usersService.getSubordinatesOfUser(id)
+  }
+
+  @Patch('upd')
+  async updUser(@Body() body: any): Promise<any> {
+    return this.usersService.assignBossToUser(body)
   }
 }

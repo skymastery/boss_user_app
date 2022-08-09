@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../entity/user.entity'
 import { Repository } from 'typeorm'
@@ -32,8 +32,62 @@ export class UsersService {
   }
 
   async getAllUsers() {
-    const users = await this.userRepository.find()
-    return users
+    return await this.userRepository.find()
+  }
+
+  async assignBossToUser(data: any) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: data.futureSubordinateId,
+      },
+    })
+    user.boss = data.futureBossId
+    await this.userRepository.update(user.id, user)
+    return await this.userRepository.findOne({
+      where: {
+        id: data.futureSubordinateId,
+      },
+    })
+  }
+
+  async getSubordinatesOfUser(id: number) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    })
+    if (!user) {
+      throw new HttpException('Incorrect user ID', 404)
+    }
+
+    if (user.isAdmin === true) {
+      return await this.getAllUsers()
+    }
+    return await this.userRepository.query(
+      `WITH RECURSIVE subordinates AS (
+ SELECT
+  id,
+  username,
+  boss
+
+ FROM
+    "user"
+ WHERE
+  id = ${id}
+ UNION
+  SELECT
+   u.id,
+   u.username,
+   u.boss
+   
+  FROM
+   "user" u
+  INNER JOIN subordinates s ON s.id = u.boss
+) SELECT
+ *
+FROM
+ subordinates`
+    )
   }
 
   private static generatePasswordSalt() {
@@ -57,11 +111,9 @@ export class UsersService {
         username: userDto.username,
       },
     })
-    console.log(1)
     if (!user) {
       throw new BadRequestException('Username or password incorrect.')
     }
-    console.log(2)
     const isValidPassword = this.validatePassword(
       userDto.password,
       user.passwordSalt,
@@ -71,7 +123,6 @@ export class UsersService {
     if (!isValidPassword) {
       throw new BadRequestException('Username or password incorrect.')
     }
-    console.log(3)
     return {
       ...(await this._generateSession(user)),
     }

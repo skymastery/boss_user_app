@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class User {
@@ -20,11 +14,8 @@ export class User {
   @Column({ default: null })
   passwordSalt: string
 
-  @ManyToOne(() => User, (user) => user.id)
-  subordinateOf: User
-
-  @OneToMany(() => User, (user) => user.id)
-  bossOf: User[]
+  @Column({ default: null })
+  boss: number
 
   @Column({ default: false })
   isAdmin: boolean

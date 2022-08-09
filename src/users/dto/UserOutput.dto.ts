@@ -1,15 +1,21 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator'
+import { Exclude } from 'class-transformer'
+import { User } from '../../entity/user.entity'
 
 export class UserOutputDto {
-  @IsString()
   username: string
 
-  @IsBoolean()
   isAdmin: boolean
 
-  @IsOptional()
-  subordinateOfId?: any
+  subordinateUsers?: User
 
-  @IsOptional()
-  bossOf?: any
+  boss?: User
+
+  @Exclude()
+  passwordHashed: string
+
+  @Exclude()
+  passwordSalt: string
+  constructor(partial: Partial<UserOutputDto>) {
+    Object.assign(this, partial)
+  }
 }
