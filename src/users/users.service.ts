@@ -4,6 +4,8 @@ import { User } from '../entity/user.entity'
 import { Repository } from 'typeorm'
 import { UserCredsDto } from './dto/UserCreds.dto'
 import { AuthService } from '../auth/auth.service'
+import { AssignBossDto } from './dto/AssignBoss.dto'
+import { UserOutputDto } from './dto/UserOutput.dto'
 
 @Injectable()
 export class UsersService {
@@ -13,7 +15,7 @@ export class UsersService {
     private readonly authService: AuthService
   ) {}
 
-  async createUser(inputData: UserCredsDto) {
+  async createUser(inputData: UserCredsDto): Promise<{ msg: string }> {
     const userExists = await this.userRepository.findOne({
       where: {
         username: inputData.username,
@@ -26,16 +28,19 @@ export class UsersService {
     newUser = await this.userRepository.create(newUser)
 
     await this.userRepository.save(newUser)
-    return newUser
+    return {
+      msg: `User (id: ${newUser.id}, username:${newUser.username}) has been successfully registered.`,
+    }
   }
 
-  async getAllUsers() {
+  async getAllUsers(): Promise<{ qty: number; users: UserOutputDto[] }> {
     const qty = await this.userRepository.count()
     const users = await this.userRepository.find({
       select: {
         id: true,
         username: true,
         boss: true,
+        isAdmin: true,
       },
     })
     return {
@@ -44,7 +49,10 @@ export class UsersService {
     }
   }
 
-  async assignBossToUser(data: any, payloadId: any) {
+  async assignBossToUser(
+    data: AssignBossDto,
+    payloadId: number
+  ): Promise<{ msg: string }> {
     const user = await this.userRepository.findOne({
       where: {
         id: data.futureSubordinateId,
@@ -100,7 +108,7 @@ FROM
     )
   }
 
-  async getSubordinatesOfUser(id: any) {
+  async getSubordinatesOfUser(id: number) {
     const user = await this.userRepository.findOne({
       where: {
         id,
