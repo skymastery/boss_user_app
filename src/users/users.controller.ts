@@ -1,7 +1,15 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/CreateUser.dto'
-import { UserCredsDto } from './dto/UserCreds.dto'
+import { JwtAuthGuard } from '../_guards/auth.guard'
 
 @Controller('users')
 export class UsersController {
@@ -12,25 +20,15 @@ export class UsersController {
     return await this.usersService.createUser(createUserDto)
   }
 
-  @Post('login')
-  async login(@Body() body: UserCredsDto): Promise<any> {
-    return this.usersService.authenticate(body)
+  @UseGuards(JwtAuthGuard)
+  @Get('subordinates')
+  async getAllSubordinates(@Req() req: any) {
+    return this.usersService.getSubordinatesOfUser(req.user.id)
   }
 
-  // @UseInterceptors(ClassSerializerInterceptor)
-  // @SerializeOptions({})
-  @Get('getUsers')
-  async getAllUsers() {
-    return this.usersService.getAllUsers()
-  }
-
-  @Get('subordinates/:id')
-  async getAllSubordinates(@Param('id') id: number) {
-    return this.usersService.getSubordinatesOfUser(id)
-  }
-
-  @Patch('upd')
-  async updUser(@Body() body: any): Promise<any> {
-    return this.usersService.assignBossToUser(body)
+  @UseGuards(JwtAuthGuard)
+  @Patch('assignBoss')
+  async updUser(@Body() body: any, @Req() req: any): Promise<any> {
+    return this.usersService.assignBossToUser(body, req.userId)
   }
 }
