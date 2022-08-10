@@ -1,4 +1,4 @@
-export function getRecursiveSubordinatesSqlString(id: number) {
+export function getRecursiveSubordinatesSqlString(id: string): string {
   return `WITH RECURSIVE subordinates AS (
  SELECT
   id,
@@ -8,7 +8,7 @@ export function getRecursiveSubordinatesSqlString(id: number) {
  FROM
     "user"
  WHERE
-  id = ${id}
+  id::text = '${id}'
  UNION
   SELECT
    u.id,
@@ -17,9 +17,22 @@ export function getRecursiveSubordinatesSqlString(id: number) {
    
   FROM
    "user" u
-  INNER JOIN subordinates s ON s.id = u.boss
+  INNER JOIN subordinates s ON s.id::text = u.boss
 ) SELECT
- *
+
+ s.id,
+
+ s.username AS username2,
+
+ s.boss,
+
+ m.username as boss_name
+ 
 FROM
- subordinates`
+
+ subordinates s
+
+ JOIN "user" m
+
+ on s.boss = m.id::text`
 }

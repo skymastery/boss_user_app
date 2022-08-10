@@ -12,12 +12,14 @@ import { CreateUserDto } from './dto/CreateUser.dto'
 import { JwtAuthGuard } from '../_guards/auth.guard'
 import { AssignBossDto } from './dto/AssignBoss.dto'
 import { ResponseMsgDto } from './dto/ResponseMsg.dto'
+import { SubordinatesOutputDto } from './dto/SubordinatesOutput.dto'
+import { GetAllUsersOutputDto } from './dto/GetAllUsersOutput.dto'
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
+  @Post('register')
   async createUser(
     @Body() createUserDto: CreateUserDto
   ): Promise<ResponseMsgDto> {
@@ -26,13 +28,15 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('subordinates')
-  async getAllSubordinates(@Req() req: any) {
+  async getAllSubordinates(
+    @Req() req: any
+  ): Promise<SubordinatesOutputDto[] | GetAllUsersOutputDto> {
     return this.usersService.getSubordinatesOfUser(req.userId)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('assignBoss')
-  async updUser(
+  async assignBoss(
     @Body() body: AssignBossDto,
     @Req() req: any
   ): Promise<ResponseMsgDto> {

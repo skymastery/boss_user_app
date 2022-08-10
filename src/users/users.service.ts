@@ -5,9 +5,11 @@ import { Repository } from 'typeorm'
 import { UserCredsDto } from './dto/UserCreds.dto'
 import { AuthService } from '../auth/auth.service'
 import { AssignBossDto } from './dto/AssignBoss.dto'
-import { UserOutputDto } from './dto/UserOutput.dto'
 import { getRecursiveSubordinatesSqlString } from '../_shared/queries/sql_getRecursiveSubordinates'
 import { ResponseMsgDto } from './dto/ResponseMsg.dto'
+import { GetAllUsersOutputDto } from './dto/GetAllUsersOutput.dto'
+import { SubordinatesOutputDto } from './dto/SubordinatesOutput.dto'
+import { CreateUserDto } from './dto/CreateUser.dto'
 
 @Injectable()
 export class UsersService {
@@ -17,16 +19,23 @@ export class UsersService {
     private readonly authService: AuthService
   ) {}
 
-  async createUser(inputData: UserCredsDto): Promise<ResponseMsgDto> {
+  async createUser(inputData: CreateUserDto): Promise<ResponseMsgDto> {
     const userExists = await this.userRepository.findOne({
       where: {
         username: inputData.username,
       },
     })
-    if (userExists) {
+    if (userExists)
       throw new BadRequestException('User with this username exists')
+    if (inputData.boss) {
+      const bossExists = await this.userRepository.findOne({
+        where: {
+          id: inputData.boss,
+        },
+      })
+      if (!bossExists) throw new BadRequestException('Invalid boss id')
     }
-    let newUser = this.register(inputData)
+    let newUser = this.getUserWithHashedData(inputData)
     newUser = await this.userRepository.create(newUser)
 
     await this.userRepository.save(newUser)
@@ -35,9 +44,9 @@ export class UsersService {
     }
   }
 
-  async getAllUsers(): Promise<{ qty: number; users: UserOutputDto[] }> {
-    const qty = await this.userRepository.count()
-    const users = await this.userRepository.find({
+  async getAllUsers(): Promise<GetAllUsersOutputDto> {
+    const quantity = await this.userRepository.count()
+    const allUsers = await this.userRepository.find({
       select: {
         id: true,
         username: true,
@@ -46,14 +55,14 @@ export class UsersService {
       },
     })
     return {
-      qty,
-      users,
+      quantity,
+      allUsers,
     }
   }
 
   async assignBossToUser(
     data: AssignBossDto,
-    payloadId: number
+    payloadId: string
   ): Promise<ResponseMsgDto> {
     const user = await this.userRepository.findOne({
       where: {
@@ -67,6 +76,9 @@ export class UsersService {
 
     let subordinateValidation: boolean
     for (const subordinate of recursiveSubordinates) {
+      if (subordinate.id === payloadId) {
+        continue
+      }
       if (subordinate.id === data.futureSubordinateId) {
         subordinateValidation = true
         break
@@ -82,11 +94,15 @@ export class UsersService {
     }
   }
 
-  async queryRecursiveSubordinates(id: number) {
+  async queryRecursiveSubordinates(
+    id: string
+  ): Promise<SubordinatesOutputDto[]> {
     return this.userRepository.query(getRecursiveSubordinatesSqlString(id))
   }
 
-  async getSubordinatesOfUser(id: number) {
+  async getSubordinatesOfUser(
+    id: string
+  ): Promise<SubordinatesOutputDto[] | GetAllUsersOutputDto> {
     const user = await this.userRepository.findOne({
       where: {
         id,
@@ -103,9 +119,9 @@ export class UsersService {
     return this.queryRecursiveSubordinates(id)
   }
 
-  public register(inputData: UserCredsDto): User {
+  public getUserWithHashedData(inputData: UserCredsDto): User {
     const newUser = new User()
-    newUser.username = inputData.username
+    newUser.username = inputData.username.toLowerCase()
     const hashedData = this.authService.generateHashedPassword(
       inputData.password
     )

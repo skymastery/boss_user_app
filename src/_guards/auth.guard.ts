@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -29,19 +30,23 @@ export class JwtAuthGuard implements CanActivate {
     if (!payload) {
       throw new UnauthorizedException('Invalid Authorization token')
     }
-
-    const user = await this.userRepository.findOne({
-      where: {
-        id: parseInt(payload.id),
-      },
-    })
+    let user
+    try {
+      user = await this.userRepository.findOne({
+        where: {
+          id: <string>payload.id,
+        },
+      })
+    } catch (e) {
+      console.log('Guard error: ' + e)
+      throw new BadRequestException('Authentication failed')
+    }
     if (!user) {
       throw new UnauthorizedException(
         'Authentication failed. Token is valid, but this user is not found.'
       )
     }
-
-    req.userId = user.id
+    req.userId = <string>user.id
 
     return true
   }

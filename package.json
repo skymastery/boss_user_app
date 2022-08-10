@@ -20,9 +20,10 @@
       "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
       "test:e2e": "jest --config ./test/jest-e2e.json",
       "typeorm": "typeorm-ts-node-commonjs",
+      "migration:create": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:create -d src/orm/config/ormconfig.ts",
       "migration:generate": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate -d src/orm/config/ormconfig.ts",
       "migration:run": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:run -d src/orm/config/ormconfig.ts",
-      "migration:down": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:revert -d src/orm/config/ormconfig.ts"
+      "migration:revert": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:revert -d src/orm/config/ormconfig.ts"
    },
    "dependencies": {
       "@nestjs/common": "^8.0.0",
@@ -33,7 +34,6 @@
       "class-transformer": "^0.5.1",
       "class-validator": "^0.13.2",
       "jose": "^4.8.3",
-      "mysql2": "^2.3.3",
       "pg": "^8.4.0",
       "reflect-metadata": "^0.1.13",
       "rimraf": "^3.0.2",

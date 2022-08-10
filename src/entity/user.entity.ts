@@ -2,8 +2,8 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column({ unique: true })
   username: string
@@ -15,7 +15,7 @@ export class User {
   passwordSalt: string
 
   @Column({ default: null })
-  boss: number
+  boss: string
 
   @Column({ default: false })
   isAdmin: boolean

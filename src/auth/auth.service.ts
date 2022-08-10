@@ -7,6 +7,7 @@ import crypto from 'node:crypto'
 import { createSecretKey } from 'node:crypto'
 import * as jose from 'jose'
 import { IAuthJwt } from '../_shared/interfaces'
+import { TokenOutputDto } from './dto/TokenOutput.dto'
 
 @Injectable()
 export class AuthService {
@@ -15,12 +16,10 @@ export class AuthService {
     private userRepository: Repository<User>
   ) {}
 
-  public async authenticate(
-    userCreds: UserCredsDto
-  ): Promise<{ user: User; auth: { accessToken: string } }> {
+  public async authenticate(userCreds: UserCredsDto): Promise<TokenOutputDto> {
     const user = await this.userRepository.findOne({
       where: {
-        username: userCreds.username,
+        username: userCreds.username.toLowerCase(),
       },
     })
     if (!user) {
@@ -40,18 +39,20 @@ export class AuthService {
     }
   }
 
-  public async _generateSession(
-    user: User
-  ): Promise<{ user: User; auth: { accessToken: string } }> {
+  public async _generateSession(user: User): Promise<TokenOutputDto> {
     return {
-      user: user,
+      user: {
+        id: user.id,
+        username: user.username,
+        boss: user.boss,
+      },
       auth: {
         accessToken: await this._generateAuthJwtToken(user.id),
       },
     }
   }
 
-  public async _generateAuthJwtToken(userId: number): Promise<string> {
+  public async _generateAuthJwtToken(userId: string): Promise<string> {
     const secretKey = createSecretKey(process.env.JWT_AUTH_TOKEN_KEY, 'utf-8')
 
     return new jose.SignJWT({ id: userId })
@@ -72,7 +73,10 @@ export class AuthService {
     return generatedHash === existingPassword
   }
 
-  generateHashedPassword(newPass: string) {
+  generateHashedPassword(newPass: string): {
+    salt: string
+    passwordHashed: string
+  } {
     const salt = this.generatePasswordSalt()
     const saltWithMagic = this._hash(salt, process.env.MAGIC_SALT)
     const passwordHashed = this._hash(newPass, saltWithMagic)
@@ -82,7 +86,7 @@ export class AuthService {
     }
   }
 
-  generatePasswordSalt() {
+  generatePasswordSalt(): string {
     return crypto.randomBytes(120).toString('hex')
   }
 
@@ -94,6 +98,7 @@ export class AuthService {
     if (authHeader.split(' ')[0] !== 'Bearer') {
       throw new BadRequestException('Token is either invalid or expired.')
     }
+
     const token = authHeader.split(' ')[1]
     return jose
       .jwtVerify(

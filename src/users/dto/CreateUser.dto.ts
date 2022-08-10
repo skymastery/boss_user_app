@@ -1,8 +1,8 @@
 import {
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
 } from 'class-validator'
 
@@ -16,7 +16,7 @@ export class CreateUserDto {
   @Length(6, 16)
   password: string
 
-  @IsInt()
+  @IsUUID()
   @IsOptional()
-  subordinateOfId: number
+  boss: string
 }
