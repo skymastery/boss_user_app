@@ -64,31 +64,56 @@ export class UsersService {
     data: AssignBossDto,
     payloadId: string
   ): Promise<ResponseMsgDto> {
-    const user = await this.userRepository.findOne({
-      where: {
-        id: data.futureSubordinateId,
-      },
-    })
+    // validating that provided users exist
+    const [queryingUser, subordinateUser, bossUser] = await Promise.all([
+      this.userRepository.findOne({
+        where: {
+          id: payloadId,
+        },
+        select: {
+          isAdmin: true,
+        },
+      }),
+      this.userRepository.findOne({
+        where: {
+          id: data.futureSubordinateId,
+        },
+      }),
+      this.userRepository.findOne({
+        where: {
+          id: data.futureBossId,
+        },
+      }),
+    ])
 
+    if (!subordinateUser || !bossUser)
+      throw new BadRequestException('Invalid ID provided')
     const recursiveSubordinates = await this.queryRecursiveSubordinates(
       payloadId
     )
 
     let subordinateValidation: boolean
+    if (queryingUser.isAdmin === true) subordinateValidation = true // making sure that admin has access
+
     for (const subordinate of recursiveSubordinates) {
-      if (subordinate.id === payloadId) {
-        continue
+      if (subordinateValidation) {
+        break
       }
+      if (subordinate.id === payloadId) {
+        continue // making sure a user cannot assign a boss to themselves
+      }
+
       if (subordinate.id === data.futureSubordinateId) {
-        subordinateValidation = true
+        subordinateValidation = true // check if the querying user is boss of the provided subordinate user
         break
       }
     }
+
     if (subordinateValidation !== true) {
       throw new HttpException('Access denied', 400)
     }
-    user.boss = data.futureBossId
-    await this.userRepository.update(user.id, user)
+    subordinateUser.boss = data.futureBossId
+    await this.userRepository.update(subordinateUser.id, subordinateUser)
     return {
       msg: `User ${data.futureBossId} has been successfully assigned as boss of user ${data.futureSubordinateId}`,
     }

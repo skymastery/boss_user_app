@@ -1,73 +1,77 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A tiny server app based on:
+`NestJS, TypeScript, NodeJS, TypeORM, PostgreSQL`.
+
+The app implements simple organization user structure management operations.
+The following user roles are supported:
+a. Administrator (top-most user)
+b. Boss (any user with at least 1 subordinate)
+c. Regular user (user without subordinates)
+
+Each user except the Administrator must have a boss (strictly one).
+The following REST API endpoints are exposed:
+1. Register user
+2. Authenticate as a user
+3. Return list of users, taking into account the following:
+- administrator should see everyone
+- boss should see herself and all subordinates (recursively)
+- regular user can see only herself
+4. Change user's boss (only boss can do that and only for her subordinates; admin has all access)
+
+## Endpoints
+
+```
+# Register a new user
+[POST] Path: 'users/register', [BODY/JSON]: 
+      {
+        "username": "string",
+        "password": "string, 6-16 char",
+        "boss": "(optional field) uuid of the user who will be assigned as boss"
+      }
+      
+# Authenticate (to get JWT token)
+[POST] Path: 'auth/login', [BODY/JSON]:
+      {
+        "username": "string",
+        "password": "string"
+      }
+      
+# List all of the subordinates (or get all users if admin)
+[GET] Path: 'users/subordinates', [Bearer Token]
+
+# Assign boss to a user
+[PATCH] Path: 'users/assignBoss', [Bearer Token], [BODY/JSON]:
+      {
+        "futureSubordinateId": "string/uuid",
+        "futureBossId": "string/uuid"
+      }
+```
 
 ## Installation
 
 ```bash
+1) Install node modules
 $ npm install
+
+2) Create an empty postgreSQL database (and pass its creds to the .env)
+
+3) Create and populate .env (example provided)
+
+4) Run migrations
+$ npm run migration:run
+  # The init migration file is already provided in src/orm/migrations.
+  # If for some reason migrations fail to run, uncomment line 21 in src/app.module.ts 
+  #   for automatic schema sync.
 ```
 
 ## Running the app
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
+# run in watch mode
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+- Author - Artur Tsoklan <a.tsoklan@gmail.com>
